@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workouts     Workout[]
+  goals        Goal[]
+  achievements Achievement[]
+
+  @@map("users")
+}
+
+model Workout {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  duration    Int      // in minutes
+  calories    Int?
+  date        DateTime @default(now())
+  type        String   // e.g., "strength", "cardio", "flexibility"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  exercises Exercise[]
+
+  @@map("workouts")
+}
+
+model Exercise {
+  id       String @id @default(cuid())
+  name     String
+  sets     Int?
+  reps     Int?
+  weight   Float?
+  duration Int?   // in seconds
+  distance Float? // in meters
+
+  workoutId String
+  workout   Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  @@map("exercises")
+}
+
+model Goal {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  target      Float
+  current     Float    @default(0)
+  unit        String   // e.g., "kg", "minutes", "workouts"
+  deadline    DateTime?
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("goals")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  icon        String
+  unlockedAt  DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("achievements")
+}
